@@ -20,7 +20,7 @@ class ClientProxy {
 public : 
 	
 	// 构造函数,传入端口
-	ClientProxy(int port) : _tcp(port) { }
+	ClientProxy() = default;
 	
 	// 启动代理 
 	void start();

@@ -21,18 +21,17 @@ class DataPkg {
 public : 
 	DataPkg(bool isTcp, char *data, int len) : 
 		_isTcp(isTcp), _data(data, data+len) { }
-#ifdef WIN32
-	// VS2010不支持该特性
-	DataPkg() {}
-#else
+
 	DataPkg() = default;
-#endif
 
 	// 序列化包
 	std::shared_ptr<char> serialize();
 	
 	// 反序列化
 	int deserialize(const char *data, int len);
+
+	// 取得包体
+	std::vector<char> getData() { return _data; }
 	
 	// 获得包长度
 	int size();	 
