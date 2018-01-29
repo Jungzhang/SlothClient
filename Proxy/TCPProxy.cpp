@@ -24,50 +24,45 @@
 	#pragma comment(lib,"ws2_32.lib")
 #endif
 
-int TCPProxy::init()
+void TCPProxy::start()
 {
 #ifdef WIN32
 	//初始化WSA  
-    _sockVersion = MAKEWORD(2,2);   
-    if(WSAStartup(_sockVersion, &_wsaData)!=0)  
-    {  
-        return -1;  
-    }
+	_sockVersion = MAKEWORD(2, 2);
+	if (WSAStartup(_sockVersion, &_wsaData) != 0)
+	{
+		return;
+	}
 #endif
-  
-    //创建套接字  
-    _listen = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);  
-    if(_listen == INVALID_SOCKET)  
-    {  
-		// TODO: 改为日志输出
-        printf("socket error !\n");  
-        return -1;  
-    }  
-  
-    //绑定IP和端口  
-    _addr.sin_family = AF_INET;
-    _addr.sin_port = htons(_port);  
-    _addr.sin_addr.S_un.S_addr = INADDR_ANY;   
-    if(bind(_listen, (LPSOCKADDR)&_addr, sizeof(_addr)) == SOCKET_ERROR)  
-    {
-		// TODO: 改为日志输出
-        printf("bind error !\n");
-        return -1;
-    }  
-  
-    // 转化为监听套接字  
-    if(listen(_listen, 5) == SOCKET_ERROR)  
-    {  
-		// TODO: 改为日志输出
-        printf("listen error !\n");  
-        return -1;  
-    }
-	
-	return 0;
-}
 
-void TCPProxy::start()
-{
+	//创建套接字  
+	_listen = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	if (_listen == INVALID_SOCKET)
+	{
+		// TODO: 改为日志输出
+		printf("socket error !\n");
+		return;
+	}
+
+	//绑定IP和端口  
+	_addr.sin_family = AF_INET;
+	_addr.sin_port = htons(_config._local_port);
+	_addr.sin_addr.S_un.S_addr = INADDR_ANY;
+	if (bind(_listen, (LPSOCKADDR)&_addr, sizeof(_addr)) == SOCKET_ERROR)
+	{
+		// TODO: 改为日志输出
+		printf("bind error !\n");
+		return;
+	}
+
+	// 转化为监听套接字  
+	if (listen(_listen, 5) == SOCKET_ERROR)
+	{
+		// TODO: 改为日志输出
+		printf("listen error !\n");
+		return;
+	}
+
 	SOCK client;
 
     struct sockaddr_in peerAddr;  
@@ -116,12 +111,12 @@ void TCPProxy::worker(SOCK client, struct sockaddr_in clientAddr)
 	t.detach();
 
 	int len;
-	char buffer[1024];
+	char buffer[10240];
 	while(true)
 	{
 		// Proxy客户端发送过来的TCP消息
 		// 接收数据 
-		len = recv(client, buffer, 1024, 0);
+		len = recv(client, buffer, 10240, 0);
 		if (len > 0)
 		{
 			// 构造协议包
@@ -145,11 +140,11 @@ void TCPProxy::worker(SOCK client, struct sockaddr_in clientAddr)
 void TCPProxy::recvUDT(SOCK &notice, RUDPClient &rudp)
 {
 	int len;
-	char buf[1024];
+	char buf[10240];
 
 	while (true)
 	{
-		len = rudp.recv(buf, 1024);
+		len = rudp.recv(buf, 10240);
 		if (len <= 0)
 		{
 			break;
@@ -168,4 +163,11 @@ void TCPProxy::recvUDT(SOCK &notice, RUDPClient &rudp)
 	}
 
 	closesocket(notice);
+}
+
+int TCPProxy::init(Config config)
+{
+	_config = config;
+	
+	return 0;
 }

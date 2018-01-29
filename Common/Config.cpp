@@ -23,7 +23,7 @@
 
 int Config::parse_config(const std::string &path)
 {
-	std::ifstream config(path.c_str(), std::ios::binary);
+	std::ifstream config(path.c_str());
 	
 	if (!config.is_open())
 	{
@@ -37,13 +37,14 @@ int Config::parse_config(const std::string &path)
 	if (reader.parse(config, root))
 	{
 		_name = root["name"].asString();
-		_srv_addr = root["server_addr"].asString();
-		_srv_port = root["server_addr"].asInt();
 		_local_port = root["local_port"].asInt();
+		_srv_addr = root["server_addr"].asString();
+		_srv_port = root["server_port"].asInt();
+		_remote_addr = root["remote_addr"].asString();
 		_remote_port = root["remote_port"].asInt();
 		_up_bandwidth = root["up_bandwidth"].asInt();
 		_down_bandwindth = root["down_bandwindth"].asInt();
-		_remote_addr = root["remote_addr"].asString();
+		
 	}
 	else
 	{

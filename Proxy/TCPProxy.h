@@ -22,15 +22,10 @@
 class TCPProxy {
 
 public :
-	TCPProxy(int port) : _port(port) { }
 	void start();
+	int init(Config config);
 
 private : 
-	/*
-		初始化相关操作 
-		@return : 0 成功, 非 0 失败 
-	*/
-	int init();
 	/*
 		@para-1: 和Proxy客户端创建的SOCKET
 		@para-2: Proxy客户端的地址信息
@@ -45,7 +40,6 @@ private :
 	void recvUDT(SOCK &notice, RUDPClient &rudp);
 
 private : 
-	int _port;                 // Proxy监听的端口
 	SOCK _listen;            // Proxy的listen socket
 	struct sockaddr_in _addr;  // addr
 	// Windows 相关 
