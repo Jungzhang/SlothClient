@@ -1,9 +1,9 @@
 /*************************************************************************
-2     > File Name: typedefs.h
-3     > Author: Raiden
-4     > Mail: jungzhang@xiyoulinux.org
-5     > Created Time: Thu Sep 28 00:52:47 2017
-6  ************************************************************************/
+     > File Name: typedefs.h
+     > Author: Raiden
+     > Mail: jungzhang@xiyoulinux.org
+     > Created Time: Thu Sep 28 00:52:47 2017
+ ************************************************************************/
 
 /*
 	为了在某些方面保持源码的跨平台性, 设置该文件

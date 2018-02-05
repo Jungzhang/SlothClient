@@ -1,9 +1,9 @@
 /*************************************************************************
-  2     > File Name: TCPProxy.cpp
-  3     > Author: Raiden  
-  4     > Mail: jungzhang@xiyoulinux.org
-  5     > Created Time: Thu Sep 28 00:52:47 2017
-  6  ************************************************************************/
+      > File Name: TCPProxy.cpp
+      > Author: Raiden  
+      > Mail: jungzhang@xiyoulinux.org
+      > Created Time: Thu Sep 28 00:52:47 2017
+ ************************************************************************/
 
 
 #include <thread>
@@ -77,6 +77,8 @@ void TCPProxy::start()
             printf("accept error !\n");
             continue;  
         }
+		// TODO: del
+		printf("new proxy client connected\n");
         // 开启一个线程执行相应操作
 		std::thread t(std::bind(&TCPProxy::worker, this, client, peerAddr));
 		t.detach();
@@ -102,42 +104,109 @@ void TCPProxy::worker(SOCK client, struct sockaddr_in clientAddr)
 	if (rudp.send(info.serialize().get(), info.size()) != info.size())
 	{
 		// TODO: 改成日志输出
-		printf("send application info failed\n");
+		printf("send application info failed, %s\n", UDT::getlasterror().getErrorMessage());
 		return;
 	}
 
-	// 创建发送线程
-	std::thread t(std::bind(&TCPProxy::recvUDT, this, client, rudp));
-	t.detach();
-
-	int len;
-	char buffer[10240];
-	while(true)
+	int epid = UDT::epoll_create();
+	if (epid == UDT::ERROR)
 	{
-		// Proxy客户端发送过来的TCP消息
-		// 接收数据 
-		len = recv(client, buffer, 10240, 0);
-		if (len > 0)
+		// TODO: 改为日志输出
+		printf("epoll create failed, %s\n", UDT::getlasterror().getErrorMessage());
+		return;
+	}
+	int events = UDT_EPOLL_IN;
+	UDT::epoll_add_usock(epid, rudp._srv_handler, &events);
+	UDT::epoll_add_ssock(epid, client, &events);
+
+	bool flag = false;
+	while (!flag)
+	{
+		char buf[10240];
+		std::set<UDTSOCKET> udtfds;
+		std::set<SYSSOCKET> sysfds;
+		int ret = UDT::epoll_wait(epid, &udtfds, NULL, -1, &sysfds, NULL);
+
+		if (ret == UDT::ERROR)
 		{
-			// 构造协议包
-			DataPkg  pkg(true, buffer, len);
-			// 发送到服务端
-			if (rudp.send(pkg.serialize().get(), pkg.size()) < 0)
+			// TODO: 改为日志输出
+			printf("epoll_wait failed, %s\n", UDT::getlasterror().getErrorMessage());
+			continue;
+		}
+
+		// UDTSOCKET上来数据
+		for (auto it : udtfds)
+		{
+			int len = UDT::recv(it, buf, 10240, 0);
+			if (len > 0)
 			{
-				// TODO: 改成日志输出
-				printf("send data failed\n");
+				// 发送数据给TCPProxy的客户端
+				::send(client, buf, len, 0);
+			}
+			else if (len == UDT::ERROR)
+			{
+				// TODO: 改为日志输出
+				printf("udt recv failed, %s\n", UDT::getlasterror().getErrorMessage());
+				flag = true;
+				break;
+			}
+			else
+			{
+				// TODO: 改为日志输出
+				printf("udt socket closed, %s\n", UDT::getlasterror().getErrorMessage());
+				flag = true;
+				break;
 			}
 		}
-		else
+
+		// SYSSOCKET上来数据
+		for (auto it : sysfds)
 		{
-			break;
+			int len = ::recv(it, buf, 10240, 0);
+			if (len > 0)
+			{
+				// 发送数据给TCPProxy的客户端
+				int ret = UDT::send(rudp._srv_handler, buf, len, 0);
+				if (ret == UDT::ERROR)
+				{
+					// TODO: 改为日志输出
+					printf("ust send failed, %s\n", UDT::getlasterror().getErrorMessage());
+					flag = true;
+					break;
+				}
+			}
+			else if (len == UDT::ERROR)
+			{
+				// TODO: 改为日志输出
+				printf("recv failed\n");
+				flag = true;
+				break;
+			}
+			else
+			{
+				// TODO: 改为日志输出
+				//printf("proxy client socket closed\n");
+				flag = true;
+				break;
+			}
 		}
 	}
-	
-	closesocket(client);
+
+	// 资源回收
+	// 关闭UDTSOCKET
+	UDT::close(rudp._srv_handler);
+	// 关闭TCPProxy的socket
+	#ifdef WIN32
+		::closesocket(client);
+	#else
+		::close(client);
+	#endif
+	// 从epoll中移除
+	UDT::epoll_remove_ssock(epid, client);
+	UDT::epoll_remove_usock(epid, rudp._srv_handler);
 }
 
-void TCPProxy::recvUDT(SOCK &notice, RUDPClient &rudp)
+void TCPProxy::recvUDT(SOCK notice, RUDPClient rudp)
 {
 	int len;
 	char buf[10240];
@@ -147,15 +216,13 @@ void TCPProxy::recvUDT(SOCK &notice, RUDPClient &rudp)
 		len = rudp.recv(buf, 10240);
 		if (len <= 0)
 		{
+			// TODO: 改为日志输出
+			printf("rudp recv failed\n");
 			break;
 		}
 		
-		// 拆包
-		DataPkg pkg;
-		pkg.deserialize(buf, len);
-		
 		// 发回给Proxy的客户端
-		int ret = send(notice, pkg.getData().data(), pkg.getData().size(), 0);
+		int ret = send(notice, buf, len, 0);
 		if (ret <= 0)
 		{
 			break;

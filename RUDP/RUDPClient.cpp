@@ -1,9 +1,9 @@
 /*************************************************************************
-  2     > File Name: RUDPClient.cpp
-  3     > Author: Raiden  
-  4     > Mail: jungzhang@xiyoulinux.org
-  5     > Created Time: Thu Sep 28 00:52:47 2017
-  6  ************************************************************************/
+      > File Name: RUDPClient.cpp
+      > Author: Raiden  
+      > Mail: jungzhang@xiyoulinux.org
+      > Created Time: Thu Sep 28 00:52:47 2017
+ ************************************************************************/
  
 #include <iostream>
  
@@ -90,7 +90,5 @@ int RUDPClient::send(const char *buf, int len)
 		return -1; 
 	}
 	
-	return 0;
+	return ret;
 }
-
-

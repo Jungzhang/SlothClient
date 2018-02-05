@@ -1,9 +1,9 @@
 /*************************************************************************
-  2     > File Name: TCPProxy.cpp
-  3     > Author: Raiden  
-  4     > Mail: jungzhang@xiyoulinux.org
-  5     > Created Time: Thu Sep 28 00:52:47 2017
-  6  ************************************************************************/
+      > File Name: TCPProxy.cpp
+      > Author: Raiden  
+      > Mail: jungzhang@xiyoulinux.org
+      > Created Time: Thu Sep 28 00:52:47 2017
+ ************************************************************************/
 
 #ifndef __TCPPROXY__H
 #define __TCPPROXY__H
@@ -34,10 +34,11 @@ private :
 	void worker(SOCK client, struct sockaddr_in clientAddr);
 
 	/*
-		负责接收Server回传的UDT数据包,并且返回给Proxy的客户端
-		@para-1 : 
+		负责接收Server回传的UDT数据包,并且返回给Proxy的客户端(已废弃)
+		@para-1 : TCP端口的socket对象
+		@para-2 : UDT端口的socket对象
 	*/
-	void recvUDT(SOCK &notice, RUDPClient &rudp);
+	void recvUDT(SOCK notice, RUDPClient rudp);
 
 private : 
 	SOCK _listen;            // Proxy的listen socket

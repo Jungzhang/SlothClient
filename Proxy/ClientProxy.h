@@ -1,9 +1,9 @@
 /*************************************************************************
-  2     > File Name: ClientProxy.h
-  3     > Author: Raiden  
-  4     > Mail: jungzhang@xiyoulinux.org
-  5     > Created Time: Thu Sep 28 00:52:47 2017
-  6  ************************************************************************/
+      > File Name: ClientProxy.h
+      > Author: Raiden  
+      > Mail: jungzhang@xiyoulinux.org
+      > Created Time: Thu Sep 28 00:52:47 2017
+ ************************************************************************/
 
 #ifndef __CLIENTPROXY_H__
 #define __CLIENTPROXY_H__

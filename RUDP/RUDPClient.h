@@ -1,9 +1,9 @@
 /*************************************************************************
-  2     > File Name: RUDPClient.h
-  3     > Author: Raiden  
-  4     > Mail: jungzhang@xiyoulinux.org
-  5     > Created Time: Thu Sep 28 00:52:47 2017
-  6  ************************************************************************/
+      > File Name: RUDPClient.h
+      > Author: Raiden
+      > Mail: jungzhang@xiyoulinux.org
+      > Created Time: Thu Sep 28 00:52:47 2017
+ ************************************************************************/
   
 #ifndef __RUDPCLIENT_H__
 #define __RUDPCLIENT_H__
@@ -61,10 +61,9 @@ public :
 	*/
 	int send(const char *buf, int len);
 
-private : 
+public : 
 	struct addrinfo _srv_info;      // 服务端信息  
 	UDTSOCKET _srv_handler;         // 建立的UDTSOCKET对象 
 };
 
 #endif
-  
